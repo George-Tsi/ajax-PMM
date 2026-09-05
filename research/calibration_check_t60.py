@@ -7,7 +7,7 @@ import csv
 from pathlib import Path
 
 from src.calibration.events import EventLadder, load_events
-from src.calibration.stats import print_calibration_table
+from src.calibration.stats import calibration_table
 from src.coinbase.client import CoinbaseClient
 from src.coinbase.price_lookup import build_price_lookup, fetch_price_history, price_at
 from src.kalshi.client import KalshiClient, KalshiAPIError
@@ -15,6 +15,7 @@ from src.kalshi.client import KalshiClient, KalshiAPIError
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 SETTLED_CSV = DATA_DIR / "kxbtcd_settled_20260825_0346.csv"
 BTC_PRICE_CACHE_CSV = DATA_DIR / "btcusd_1min_20260618_20260825.csv"
+PAIRS_CACHE_CSV = DATA_DIR / "atm_calibration_pairs.csv"
 
 BTC_PRODUCT_ID = "BTC-USD"
 KALSHI_SERIES_TICKER = "KXBTCD"
@@ -39,11 +40,6 @@ def implied_prob_at_t(kalshi: KalshiClient, event: EventLadder, spot: float) -> 
         if c.yes_bid_close > 0 and c.yes_ask_close > 0:
             return (c.yes_bid_close + c.yes_ask_close) / 2, strike.result
     return None
-
-
-# To loop over all 1528 events
-
-PAIRS_CACHE_CSV = DATA_DIR / "atm_calibration_pairs.csv"
 
 
 def _save_pairs(path: Path, pairs: list[tuple[float, str]]) -> None:
@@ -86,7 +82,11 @@ def main() -> None:
 
     print(f"{len(pairs)} events with avalid quote, {misses} skipped (no quote in window)")
 
-    print_calibration_table(pairs, IN_BUCKETS)
+    table = calibration_table(pairs, IN_BUCKETS)
+    for row in table:
+        gap = row["realized_rate"] - row["mean_implied"]
+        print(f"bucket {row['bucket']}: n={row['n']:>4} implied={row['mean_implied']:.3f} "
+                f"realized={row['realized_rate']:.3f} gap={gap:+.3f}")
 
 
 if __name__ == "__main__":
