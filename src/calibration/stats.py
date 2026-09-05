@@ -28,6 +28,7 @@ def calibration_table(pairs: list[tuple[float, str]], n_buckets: int) -> list[di
             "n": s["n"],
             "mean_implied": s["implied_sum"] / s["n"],
             "realized_rate": s["realized_sum"] / s["n"],
+            "realized_sum": s["realized_sum"], # add to pull raw YES count (k) for significance testing
         })
     return table
 

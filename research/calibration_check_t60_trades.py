@@ -10,7 +10,8 @@ from research.calibration_check_t60 import implied_prob_at_t
 from pathlib import Path
 
 from src.calibration.events import EventLadder, load_events
-from src.calibration.stats import print_calibration_table
+from src.calibration.stats import calibration_table, print_calibration_table
+from src.calibration.significance import bucket_binomial_test, pool_chi2_test
 from src.coinbase.client import CoinbaseClient
 from src.coinbase.price_lookup import build_price_lookup, fetch_price_history, price_at
 from src.kalshi.client import KalshiClient, KalshiAPIError
@@ -24,6 +25,8 @@ BTC_PRODUCT_ID = "BTC-USD"
 KALSHI_SERIES_TICKER = "KXBTCD"
 QUOTE_SEARCH_WINDOW_S = 300 # scan up to 5 min after T for a trade, same window as quote-midpoint check
 IN_BUCKETS = 10
+TAIL_BUCKETS = {1, 2, 3, 7, 8} # excludes 0 and 9 (near-certain) and 4/5/6 (well-calibrated core)
+ALPHA = 0.05
 
 
 def implied_prob_from_trade(kalshi: KalshiClient, event: EventLadder, spot: float) -> tuple[float, str] | None:
@@ -85,6 +88,22 @@ def main() -> None:
 
     print_calibration_table([(q, r) for q, t, r in rows], IN_BUCKETS, label="quote-midpoint calibration")
     print_calibration_table([(t, r) for q, t, r in rows], IN_BUCKETS, label="last-trade calibration")
+
+    trade_pairs = [(t, r) for q, t, r in rows]
+    table = calibration_table(trade_pairs, IN_BUCKETS)
+    tail_rows = [row for row in table if row["bucket"] in TAIL_BUCKETS]
+
+    bonferroni_alpha =ALPHA / len(tail_rows)
+    print("\n--- last-trade tail buket significance (binomial test per buckt) ---")
+    for row in tail_rows:
+        test = bucket_binomial_test(row["realized_sum"], row["n"], row["mean_implied"], alpha=bonferroni_alpha)
+        print(f"bucket {row['bucket']}: n={row['n']:>4} implied={row['mean_implied']:.3f} "
+              f"realized={row['realized_rate']:.3f} pvalue={test['pvalue']:.4f} "
+              f"ci=({test['ci_low']:.3f}, {test['ci_high']:.3f}) significant={test['significant']}")
+       
+    pooled = pool_chi2_test(tail_rows, alpha=ALPHA)
+    print(f"\npooled chi2 test on tail buckets: statistic={pooled['statistic']:.3f} "
+        f"df={pooled['df']} pvalue={pooled['pvalue']:.4f} significant={pooled['significant']}")
 
 
 if __name__ == "__main__":
