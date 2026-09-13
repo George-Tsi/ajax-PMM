@@ -106,6 +106,13 @@ class Trade:
     no_price: float
     count: float
     taker_side: str
+    taker_book_side: str | None = None
+    is_block_trade: bool = False
+
+    @property
+    def maker_short(self) -> bool:
+        """A taker buying YES is filled by a maker who sold YES."""
+        return self.taker_side == "yes"
 
     @classmethod
     def from_json(cls, raw: dict) -> "Trade":
@@ -117,6 +124,8 @@ class Trade:
             no_price=float(raw["no_price_dollars"]),
             count=float(raw.get("count_fp", 0.0)),
             taker_side=raw["taker_side"],
+            taker_book_side=raw.get("taker_book_side"),
+            is_block_trade=bool(raw.get("is_block_trade", False)),
         )
 
 
