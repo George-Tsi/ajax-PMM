@@ -4,7 +4,7 @@ import math
 
 import pytest
 
-from src.fair_value.lognormal import implied_sigma, price
+from ajax_pmm.fair_value.lognormal import implied_sigma, price
 
 S = 63956.0
 SIGMA = 0.004043

@@ -1,4 +1,4 @@
-from src.calibration.stats import bucket_index, calibration_table
+from ajax_pmm.calibration.stats import bucket_index, calibration_table
 
 
 def test_bucket_index_boundaries():

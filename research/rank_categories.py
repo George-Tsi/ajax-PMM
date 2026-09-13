@@ -11,7 +11,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from kalshi.client import KalshiClient
+from ajax_pmm.kalshi.client import KalshiClient
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 FIELDNAMES = ["category", "events", "markets", "volume_24h", "volume_total", "open_interest"]

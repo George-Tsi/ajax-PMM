@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.calibration.events import Strike
+from ajax_pmm.calibration.events import Strike
 
 
 def select_near_money(strikes: list[Strike], spot: float, n: int) -> list[Strike]:

@@ -1,6 +1,6 @@
 import csv
 
-from src.calibration.events import load_events
+from ajax_pmm.calibration.events import load_events
 
 FIELDS = ["event_ticker", "open_time", "close_time", "ticker", "floor_strike", "result"]
 

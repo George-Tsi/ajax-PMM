@@ -9,12 +9,12 @@ from research.calibration_check_t60 import implied_prob_at_t
 
 from pathlib import Path
 
-from src.calibration.events import EventLadder, load_events
-from src.calibration.stats import calibration_table, print_calibration_table
-from src.calibration.significance import bucket_binomial_test, pool_chi2_test
-from src.coinbase.client import CoinbaseClient
-from src.coinbase.price_lookup import build_price_lookup, fetch_price_history, price_at
-from src.kalshi.client import KalshiClient, KalshiAPIError
+from ajax_pmm.calibration.events import EventLadder, load_events
+from ajax_pmm.calibration.stats import calibration_table, print_calibration_table
+from ajax_pmm.calibration.significance import bucket_binomial_test, pool_chi2_test
+from ajax_pmm.coinbase.client import CoinbaseClient
+from ajax_pmm.coinbase.price_lookup import build_price_lookup, fetch_price_history, price_at
+from ajax_pmm.kalshi.client import KalshiClient, KalshiAPIError
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 SETTLED_CSV = DATA_DIR / "kxbtcd_settled_20260825_0346.csv"

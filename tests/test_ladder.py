@@ -1,7 +1,7 @@
 import pytest
 
-from src.calibration.events import Strike
-from src.kalshi.ladder import select_near_money
+from ajax_pmm.calibration.events import Strike
+from ajax_pmm.kalshi.ladder import select_near_money
 
 
 def mk(*ks):

@@ -1,4 +1,4 @@
-from src.coinbase.price_lookup import price_at
+from ajax_pmm.coinbase.price_lookup import price_at
 
 
 TIMESTAMPS = [100, 200, 300]

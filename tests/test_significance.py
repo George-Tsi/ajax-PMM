@@ -1,6 +1,6 @@
 import pytest
 
-from src.calibration.significance import bucket_binomial_test, pool_chi2_test
+from ajax_pmm.calibration.significance import bucket_binomial_test, pool_chi2_test
 
 
 def test_bucket_binomial_test_not_significant_near_null():

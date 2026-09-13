@@ -6,11 +6,11 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-from src.calibration.events import EventLadder, load_events
-from src.calibration.stats import calibration_table
-from src.coinbase.client import CoinbaseClient
-from src.coinbase.price_lookup import build_price_lookup, fetch_price_history, price_at
-from src.kalshi.client import KalshiClient, KalshiAPIError
+from ajax_pmm.calibration.events import EventLadder, load_events
+from ajax_pmm.calibration.stats import calibration_table
+from ajax_pmm.coinbase.client import CoinbaseClient
+from ajax_pmm.coinbase.price_lookup import build_price_lookup, fetch_price_history, price_at
+from ajax_pmm.kalshi.client import KalshiClient, KalshiAPIError
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 SETTLED_CSV = DATA_DIR / "kxbtcd_settled_20260825_0346.csv"

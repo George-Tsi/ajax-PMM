@@ -8,7 +8,7 @@ from __future__ import annotations
 from pathlib import Path
 import csv
 
-from src.calibration.stats import print_calibration_table
+from ajax_pmm.calibration.stats import print_calibration_table
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 SETTLED_CSV = DATA_DIR / "kxbtcd_settled_20260825_0346.csv"

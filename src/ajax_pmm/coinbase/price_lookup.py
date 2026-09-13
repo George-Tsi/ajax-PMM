@@ -6,7 +6,7 @@ import csv
 from bisect import bisect_left
 from pathlib import Path
 
-from src.coinbase.client import Candle, CoinbaseClient
+from ajax_pmm.coinbase.client import Candle, CoinbaseClient
 
 
 def save_candles(path: Path, candles: list[Candle]) -> None:
