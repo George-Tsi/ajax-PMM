@@ -55,3 +55,30 @@ def horizon_stats(acc: dict[int, dict[str, list[float]]]) -> list[HorizonStat]:
             n_fills=sum(len(v) for v in acc[k].values()),
         ))
     return stats
+
+def horizon_stats_weighted(
+    acc: dict[int, dict[str, list[float]]]
+) -> list[HorizonStat]:
+    """Same cross-event statistics, but each event's mean is contract-weighted.
+
+    Values are (weighted_sum, weight) pairs. P&L accrues per contract, not per trade, so a
+    500-lot fill must not count the same as a 1-lot fill.
+    """
+    stats = []
+    for k in sorted(acc):
+        per_event = [num / den for num, den in acc[k].values() if den > 0]
+        n = len(per_event)
+        if n < 2:
+            continue
+        mean = sum(per_event) / n
+        var = sum((x - mean) ** 2 for x in per_event) / (n - 1)
+        se = math.sqrt(var / n)
+        stats.append(HorizonStat(
+            horizon=k,
+            mean=mean,
+            se=se,
+            t_stat=mean / se if se > 0 else float("nan"),
+            n_events=n,
+            n_fills=int(sum(den for _, den in acc[k].values())),
+        ))
+    return stats

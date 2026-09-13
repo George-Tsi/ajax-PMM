@@ -15,7 +15,7 @@ from pathlib import Path
 
 from ajax_pmm.analysis.markout import BAR_SECONDS, Bar, Fill
 
-REQUIRED = {"ticker", "created_ts", "yes_price", "taker_side", "is_block_trade"}
+REQUIRED = {"ticker", "created_ts", "yes_price", "taker_side", "is_block_trade", "count"}
 
 
 def bar_index(bars: Sequence[Bar], trade_ts: float) -> int | None:
@@ -63,7 +63,7 @@ def fills_from_trades(bars: Sequence[Bar], rows: Sequence[dict]) -> list[Fill]:
         if r["is_block_trade"] == "1":
             continue
         i = bar_index(bars, float(r["created_ts"]))
-        if i is None or not bars[i].two_sided:
+        if i is None or not bars[i].priced:
             continue
         out.append(Fill(
             index=i,
@@ -73,4 +73,28 @@ def fills_from_trades(bars: Sequence[Bar], rows: Sequence[dict]) -> list[Fill]:
             mid_at_fill=bars[i].mid,
             half_spread=bars[i].half_spread,
         ))
+    return out
+
+
+def fills_with_size(bars: Sequence[Bar], rows: Sequence[dict]) -> list[tuple[Fill, float]]:
+    """Maker fills paired with contract count.
+
+    Kept separate from fills_from_trades because rows are dropped during placement, so pairing
+    fills back to sizes by position afterwards would silently misalign.
+    """
+    out: list[tuple[Fill, float]] = []
+    for r in rows:
+        if r["is_block_trade"] == "1":
+            continue
+        i = bar_index(bars, float(r["created_ts"]))
+        if i is None or not bars[i].priced:
+            continue
+        out.append((Fill(
+            index=i,
+            end_ts=bars[i].end_ts,
+            maker_short=r["taker_side"] == "yes",
+            price=float(r["yes_price"]),
+            mid_at_fill=bars[i].mid,
+            half_spread=bars[i].half_spread,
+        ), float(r["count"])))
     return out

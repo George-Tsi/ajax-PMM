@@ -26,24 +26,31 @@ class Bar:
     volume: float
 
     @property
-    def two_sided(self) -> bool:
-        return self.bid > 0 and self.ask > 0
+    def priced(self) -> bool:
+        """A zero bid is a real quote, not missing data.
+
+        Kalshi's minimum tick is 1c, so no bid against a 1c ask bounds fair value in [0, 0.01]
+        and mid lands at 0.005. Requiring a positive bid censors exactly the contracts collapsing
+        to zero and never the ones rising to one: of 268,157 such bars in the KXBTCD ladder,
+        100% were collapses.
+        """
+        return self.ask > 0
 
     @property
     def mid(self) -> float:
-        if not self.two_sided:
+        if not self.priced:
             raise ValueError(f"mid undefined without both quotes, got {self.bid=}, {self.ask=}")
         return 0.5 * (self.bid +self.ask)
 
     @property
     def half_spread(self) -> float:
-        if not self.two_sided:
+        if not self.priced:
             raise ValueError(f"spread undefined without both quotes, got {self.bid=}, {self.ask=}")
         return 0.5 * (self.ask - self.bid)
 
 def classify_flow(bar: Bar) -> int | None:
     """Quote-rule trade signing. None when the bar did not trade or the side is ambiguous"""
-    if bar.volume <= 0 or bar.last <= 0 or not bar.two_sided:
+    if bar.volume <= 0 or bar.last <= 0 or not bar.priced:
          return None
     if bar.last >= bar.ask:
         return TAKER_BUY
@@ -103,5 +110,5 @@ def markout_curve(
             continue
         bar = bars[j]
         stale = bar.end_ts !=fill.end_ts + k * BAR_SECONDS
-        curve[k] = None if stale or not bar.two_sided else markout(fill, bar.mid)
+        curve[k] = None if stale or not bar.priced else markout(fill, bar.mid)
     return curve

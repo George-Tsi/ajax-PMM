@@ -28,14 +28,31 @@ def test_mid_and_half_spread():
     assert b.half_spread == pytest.approx(0.01)
 
 
-@pytest.mark.parametrize("bid,ask", [(0.0, 0.42), (0.40, 0.0), (0.0, 0.0)])
+@pytest.mark.parametrize("bid,ask", [(0.40, 0.0), (0.0, 0.0)])
 def test_one_sided_bar_has_no_mid_or_spread(bid, ask):
     b = bar(bid=bid, ask=ask)
-    assert not b.two_sided
+    assert not b.priced
     with pytest.raises(ValueError):
         _ = b.mid
     with pytest.raises(ValueError):
         _ = b.half_spread
+
+
+def test_zero_bid_is_a_real_quote_not_missing_data():
+    """Guards the censoring bug: a 0/1c book means the contract is collapsing, not absent data.
+
+    Requiring a positive bid dropped 268,157 KXBTCD bars, 100% of them collapses toward zero and
+    none rising to one, which censored short makers' best outcomes and long makers' worst.
+    """
+    b = bar(bid=0.0, ask=0.01)
+    assert b.priced
+    assert b.mid == pytest.approx(0.005)
+    assert b.half_spread == pytest.approx(0.005)
+
+
+def test_missing_ask_is_still_unpriced():
+    b = bar(bid=0.40, ask=0.0)
+    assert not b.priced
 
 
 def test_classify_flow_none_without_a_trade():
@@ -43,7 +60,7 @@ def test_classify_flow_none_without_a_trade():
     assert classify_flow(bar(volume=10.0, last=0.0)) is None
 
 def test_classify_flow_none_when_one_sided():
-    assert classify_flow(bar(bid=0.0, last=0.42, volume=10.0)) is None
+    assert classify_flow(bar(ask=0.0, last=0.42, volume=10.0)) is None
 
 
 @pytest.mark.parametrize("last", [0.42, 0.45])
