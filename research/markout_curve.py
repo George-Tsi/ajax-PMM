@@ -4,7 +4,7 @@ Kept because the gap between this and markout_curve_trades.py is itself the resu
 fill side from bar-close quotes reports 0.5341c per fill at one minute, above the 0.5196c
 half-spread that is the theoretical maximum. Signing trades against the quote at the end of the
 minute selects bars where the print landed on the favourable side of where the quote settled, so
-both sides come out favourably selected -- which no passive maker can be.
+both sides come out favourably selected which no passive maker can be.
 
 Use research/markout_curve_trades.py for any number that leaves this repo. It takes the fill side
 from Kalshi's published taker_side and reports 0.0643c at the same horizon.
